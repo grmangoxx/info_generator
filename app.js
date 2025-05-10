@@ -1,5 +1,5 @@
-import { generateUser } from '../user_generator.js';
-import { genAddr } from '../address_generator.js';
+import { generateUser } from './user_generator.js';
+import { genAddr } from './address_generator.js';
 import http from 'http';
 
 const PORT = 3000;
