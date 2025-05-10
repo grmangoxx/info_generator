@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "@faker-js/faker": "^9.7.0"
+  },
+  "dependencies": {
+    "google-libphonenumber": "^3.2.40",
+    "got": "^14.4.7",
+    "libphonenumber-js": "^1.12.8",
+    "user-agents": "^1.1.535"
+  }
+}
