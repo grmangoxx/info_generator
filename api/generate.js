@@ -1,24 +1,31 @@
 import { generateUser } from '../user_generator.js';
 import { genAddr } from '../address_generator.js';
+import http from 'http';
 
-export default async function handler(req, res) {
-    if (req.method === 'GET') {
+const PORT = 3000;
+
+const server = http.createServer(async (req, res) => {
+    if (req.url === '/' && req.method === 'GET') {
         try {
             const [user, address] = await Promise.all([
                 generateUser(),
                 genAddr()
             ]);
 
-            // Combine user and address into a single object
             const combinedData = { ...user, ...address };
 
-            // Return the combined data as JSON
-            res.status(200).json(combinedData);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(combinedData));
         } catch (error) {
-            // Handle errors gracefully
-            res.status(500).json({ error: 'An error occurred while generating data.' });
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'An error occurred while generating data.' }));
         }
     } else {
-        res.status(405).json({ error: 'Method not allowed. Use GET.' });
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('Not Found');
     }
-}
+});
+
+server.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}/`);
+});
