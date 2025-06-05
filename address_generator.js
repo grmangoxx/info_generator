@@ -82,9 +82,9 @@ export async function genAddr() {
                     bannedKeys.set(currentKey, banExpireTime);
                 }
                 
-                // Handle unknown key error - remove key permanently
-                if (errorCode === "2") {
-                    console.error(`Removing invalid key: ${currentKey}`);
+                // Handle unknown key error or URL restriction error - remove key permanently
+                if (errorCode === "2" || errorCode === "5") {
+                    console.error(`Removing invalid key (Error ${errorCode}): ${currentKey}`);
                     availableKeys = availableKeys.filter(k => k !== currentKey);
                     currentKeyIndex = currentKeyIndex % Math.max(1, availableKeys.length);
                 }
@@ -107,7 +107,16 @@ export async function genAddr() {
             
             // Check for errors in the second response
             if (data2.Items && data2.Items[0] && data2.Items[0].Error) {
-                console.error(`Error in Retrieve API: ${data2.Items[0].Error}`);
+                const errorCode = data2.Items[0].Error;
+                console.error(`Error in Retrieve API: ${errorCode}`);
+                
+                // Handle permanent errors like unknown key or URL restriction
+                if (errorCode === "2" || errorCode === "5") {
+                    console.error(`Removing invalid key (Error ${errorCode}): ${currentKey}`);
+                    availableKeys = availableKeys.filter(k => k !== currentKey);
+                    currentKeyIndex = currentKeyIndex % Math.max(1, availableKeys.length);
+                }
+                
                 i--; // Don't count this as a try
                 continue;
             }
