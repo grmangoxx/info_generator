@@ -123,7 +123,8 @@ export async function genAddr() {
             
             const item = data2.Items[0];
             if (isValid(item)) {
-                return {
+                const addressResult = {
+                    key: currentKey,
                     street: item.Street,
                     full_addr: `${item.BuildingNumber} ${item.Street}`,
                     city: item.City,
@@ -131,6 +132,18 @@ export async function genAddr() {
                     state_short: item.Province,
                     zip: item.PostalCode.split('-')[0]
                 };
+                
+                // Log which key successfully generated the address
+                console.log(`Successfully generated address with key ${currentKey}:`, 
+                    JSON.stringify({
+                        street: addressResult.full_addr,
+                        city: addressResult.city,
+                        state: addressResult.state,
+                        zip: addressResult.zip
+                    })
+                );
+                
+                return addressResult;
             }
         } catch (err) {
             console.error(`Error with key ${currentKey}:`, err.message);
