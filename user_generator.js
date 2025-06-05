@@ -1,8 +1,8 @@
 import UserAgent from 'user-agents';
 import { faker } from '@faker-js/faker';
-import libphonenumber from 'google-libphonenumber'; // Import the entire module
+import libphonenumber from 'google-libphonenumber'; 
 
-const { PhoneNumberUtil, PhoneNumberFormat } = libphonenumber; // Destructure the required exports
+const { PhoneNumberUtil, PhoneNumberFormat } = libphonenumber; 
 
 function generateUser() {
     const userAgent = new UserAgent({ deviceCategory: 'desktop' });
