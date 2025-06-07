@@ -6,7 +6,8 @@ const { PhoneNumberUtil, PhoneNumberFormat } = libphonenumber;
 
 function generateUser() {
     const userAgent = new UserAgent({ deviceCategory: 'desktop' });
-    const first_name = faker.person.firstName({ allowSpecialCharacters: false }).toLowerCase();
+    const gender = faker.person.sexType(); // 'male' or 'female'
+    const first_name = faker.person.firstName({ sex: gender, allowSpecialCharacters: false }).toLowerCase();
     const last_name = faker.person.lastName({ allowSpecialCharacters: false }).toLowerCase();
 
     const phoneUtil = PhoneNumberUtil.getInstance();
@@ -26,6 +27,7 @@ function generateUser() {
 
     return {
         user_agent: userAgent.toString(),
+        gender, // add gender to the returned object
         first_name,
         last_name,
         mail: faker.internet.email({
