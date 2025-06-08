@@ -13,7 +13,7 @@ function generateUser(country = 'US') {
     // Set country-specific phone number format
     const phoneFormats = {
         'US': { format: '##########', countryCode: '+1' },
-        'GB': { format: '##########', countryCode: '+44' },
+        'GB': { format: '#########', countryCode: '+44' },
         'CA': { format: '##########', countryCode: '+1' },
         'AU': { format: '#########', countryCode: '+61' }
     };
