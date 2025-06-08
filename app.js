@@ -24,7 +24,7 @@ const server = http.createServer(async (req, res) => {
             }
             
             const [user, address] = await Promise.all([
-                generateUser(),
+                generateUser(country),
                 genAddr(country)
             ]);
 

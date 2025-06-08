@@ -4,30 +4,46 @@ import libphonenumber from 'google-libphonenumber';
 
 const { PhoneNumberUtil, PhoneNumberFormat } = libphonenumber; 
 
-function generateUser() {
+function generateUser(country = 'US') {
     const userAgent = new UserAgent({ deviceCategory: 'desktop' });
     const sex = faker.person.sex();
     const first_name = faker.person.firstName({ sex: sex, allowSpecialCharacters: false }).toLowerCase();
     const last_name = faker.person.lastName({ sex: sex, allowSpecialCharacters: false }).toLowerCase();
 
+    // Set country-specific phone number format
+    const phoneFormats = {
+        'US': { format: '##########', countryCode: '+1' },
+        'GB': { format: '##########', countryCode: '+44' },
+        'CA': { format: '##########', countryCode: '+1' },
+        'AU': { format: '#########', countryCode: '+61' }
+    };
+
+    // Use country-specific format or default to US
+    const phoneFormat = phoneFormats[country] || phoneFormats['US'];
+
     const phoneUtil = PhoneNumberUtil.getInstance();
     let validPhoneNumber = null;
+    let rawNumber = null;
 
     while (!validPhoneNumber) {
         try {
-            const rawPhoneNumber = faker.phone.number('##########');
-            const phoneNumber = phoneUtil.parseAndKeepRawInput(rawPhoneNumber, 'US');
+            rawNumber = faker.phone.number(phoneFormat.format);
+            const phoneNumber = phoneUtil.parseAndKeepRawInput(rawNumber, country);
+            
             if (phoneUtil.isValidNumber(phoneNumber)) {
-                validPhoneNumber = phoneUtil.format(phoneNumber, PhoneNumberFormat.E164).replace('+1', ''); 
+                // Format phone number according to country's standard
+                validPhoneNumber = phoneUtil.format(phoneNumber, PhoneNumberFormat.E164);
+                // Remove country code for consistency with current implementation
+                validPhoneNumber = validPhoneNumber.replace(phoneFormat.countryCode, '');
             }
         } catch (error) {
-            console.error('Invalid phone number generated, retrying...');
+            console.error(`Invalid ${country} phone number generated, retrying...`);
         }
     }
 
     return {
         user_agent: userAgent.toString(),
-        sex, // add gender to the returned object
+        sex,
         first_name,
         last_name,
         mail: faker.internet.email({
@@ -45,6 +61,7 @@ function generateUser() {
             pattern: /[a-zA-Z0-9@]/,
         }),
         phone: validPhoneNumber,
+        country_code: phoneFormat.countryCode.replace('+', ''),
         u1: faker.string.uuid(),
         u2: faker.string.uuid(),
         u3: faker.string.uuid(),
