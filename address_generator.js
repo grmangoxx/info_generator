@@ -49,7 +49,7 @@ function getNextValidKey() {
     return availableKeys[currentKeyIndex++];
 }
 
-export async function genAddr() {
+export async function genAddr(country = 'US') {
     const maxTries = KEYS.length * 2;
 
     for (let i = 0; i < maxTries; i++) {
@@ -61,7 +61,7 @@ export async function genAddr() {
         }
 
         const str = genStr();
-        const url = `https://api.addressy.com/Capture/Interactive/Find/v1.1/json3.ws?Key=${currentKey}&Text=${str}&Countries=US&Language=en-gb`;
+        const url = `https://api.addressy.com/Capture/Interactive/Find/v1.1/json3.ws?Key=${currentKey}&Text=${str}&Countries=${country}&Language=en-gb`;
 
         try {
             const res = await got(url, { responseType: 'json', https: { rejectUnauthorized: false } });
