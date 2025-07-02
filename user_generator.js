@@ -10,16 +10,54 @@ function generateUser(country = 'US') {
     const first_name = faker.person.firstName({ sex: sex, allowSpecialCharacters: false }).toLowerCase();
     const last_name = faker.person.lastName({ sex: sex, allowSpecialCharacters: false }).toLowerCase();
 
-    // Set country-specific phone number format
+    // Set country-specific phone number format and timezones
     const phoneFormats = {
-        'US': { format: '##########', countryCode: '+1' },
-        'GB': { format: '#########', countryCode: '+44' },
-        'CA': { format: '##########', countryCode: '+1' },
-        'AU': { format: '#########', countryCode: '+61' }
+        'US': { 
+            format: '##########', 
+            countryCode: '+1',
+            timezones: [
+                'America/New_York',      // Eastern Time
+                'America/Chicago',       // Central Time
+                'America/Denver',        // Mountain Time
+                'America/Los_Angeles',   // Pacific Time
+                'America/Phoenix',       // Arizona Time
+                'America/Anchorage',     // Alaska Time
+                'Pacific/Honolulu'       // Hawaii Time
+            ]
+        },
+        'GB': { 
+            format: '#########', 
+            countryCode: '+44',
+            timezones: ['Europe/London']
+        },
+        'CA': { 
+            format: '##########', 
+            countryCode: '+1',
+            timezones: [
+                'America/Toronto',       // Eastern Time
+                'America/Winnipeg',      // Central Time
+                'America/Edmonton',      // Mountain Time
+                'America/Vancouver'      // Pacific Time
+            ]
+        },
+        'AU': { 
+            format: '#########', 
+            countryCode: '+61',
+            timezones: [
+                'Australia/Sydney',      // Eastern Time
+                'Australia/Melbourne',   // Eastern Time
+                'Australia/Brisbane',    // Eastern Time
+                'Australia/Adelaide',    // Central Time
+                'Australia/Perth'        // Western Time
+            ]
+        }
     };
 
     // Use country-specific format or default to US
     const phoneFormat = phoneFormats[country] || phoneFormats['US'];
+
+    // Select random timezone for the country
+    const timezone = faker.helpers.arrayElement(phoneFormat.timezones);
 
     const phoneUtil = PhoneNumberUtil.getInstance();
     let validPhoneNumber = null;
@@ -62,6 +100,7 @@ function generateUser(country = 'US') {
         }),
         phone: validPhoneNumber,
         country_code: phoneFormat.countryCode.replace('+', ''),
+        timezone: timezone,
         u1: faker.string.uuid(),
         u2: faker.string.uuid(),
         u3: faker.string.uuid(),
