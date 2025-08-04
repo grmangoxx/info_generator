@@ -12,9 +12,8 @@ const KEYS = [
     'NH23-BT77-YY58-PT86'
 ];
 
-// Key management
 let availableKeys = [...KEYS];
-const bannedKeys = new Map(); // Key -> timestamp when ban expires
+const bannedKeys = new Map();
 let currentKeyIndex = 0;
 
 function genStr() {
@@ -28,7 +27,6 @@ function isValid(item) {
 }
 
 function getNextValidKey() {
-    // Clean up expired bans
     const now = Date.now();
     for (const [key, expireTime] of bannedKeys.entries()) {
         if (now > expireTime) {
@@ -39,12 +37,10 @@ function getNextValidKey() {
         }
     }
     
-    // No keys available
     if (availableKeys.length === 0) {
         return null;
     }
     
-    // Get next key
     currentKeyIndex = (currentKeyIndex >= availableKeys.length) ? 0 : currentKeyIndex;
     return availableKeys[currentKeyIndex++];
 }
@@ -67,34 +63,28 @@ export async function genAddr(country = 'US') {
             const res = await got(url, { responseType: 'json', https: { rejectUnauthorized: false } });
             const data = res.body;
             
-            // Log the source response for debugging
             console.log(`Response from Find API:`, JSON.stringify(data));
             
-            // Check for errors in the response
             if (data.Items && data.Items[0] && data.Items[0].Error) {
                 const errorCode = data.Items[0].Error;
                 console.error(`Error in API response: ${errorCode}`);
                 
-                // Rate limit error - ban key for 24 hours
                 if (errorCode === "17") {
                     console.log(`Key ${currentKey} has reached rate limit, banning for 24 hours`);
-                    const banExpireTime = Date.now() + (24 * 60 * 60 * 1000); // 24 hours
+                    const banExpireTime = Date.now() + (24 * 60 * 60 * 1000);
                     bannedKeys.set(currentKey, banExpireTime);
                 }
                 
-                // Handle unknown key error or URL restriction error - remove key permanently
                 if (errorCode === "2" || errorCode === "5") {
                     console.error(`Removing invalid key (Error ${errorCode}): ${currentKey}`);
                     availableKeys = availableKeys.filter(k => k !== currentKey);
                     currentKeyIndex = currentKeyIndex % Math.max(1, availableKeys.length);
                 }
                 
-                // For any error, change key immediately and retry
-                i--; // Don't count this as a try
+                i--;
                 continue;
             }
             
-            // Check if we got valid address items
             const addrItem = data.Items.find(item => item.Type === 'Address');
             if (!addrItem) continue;
 
@@ -102,22 +92,19 @@ export async function genAddr(country = 'US') {
             const res2 = await got(url2, { responseType: 'json', https: { rejectUnauthorized: false } });
             const data2 = res2.body;
             
-            // Log the source response for debugging
             console.log(`Response from Retrieve API:`, JSON.stringify(data2));
             
-            // Check for errors in the second response
             if (data2.Items && data2.Items[0] && data2.Items[0].Error) {
                 const errorCode = data2.Items[0].Error;
                 console.error(`Error in Retrieve API: ${errorCode}`);
                 
-                // Handle permanent errors like unknown key or URL restriction
                 if (errorCode === "2" || errorCode === "5") {
                     console.error(`Removing invalid key (Error ${errorCode}): ${currentKey}`);
                     availableKeys = availableKeys.filter(k => k !== currentKey);
                     currentKeyIndex = currentKeyIndex % Math.max(1, availableKeys.length);
                 }
                 
-                i--; // Don't count this as a try
+                i--;
                 continue;
             }
             
@@ -133,7 +120,6 @@ export async function genAddr(country = 'US') {
                     zip: item.PostalCode.split('-')[0]
                 };
                 
-                // Log which key successfully generated the address
                 console.log(`Successfully generated address with key ${currentKey}:`, 
                     JSON.stringify({
                         street: addressResult.full_addr,
@@ -148,7 +134,6 @@ export async function genAddr(country = 'US') {
         } catch (err) {
             console.error(`Error with key ${currentKey}:`, err.message);
             
-            // Handle invalid/unknown key errors
             if (err.response && (err.response.statusCode === 401 || 
                 err.response.statusCode === 403 || 
                 err.message.includes('invalid key'))) {
@@ -157,7 +142,7 @@ export async function genAddr(country = 'US') {
                 currentKeyIndex = currentKeyIndex % Math.max(1, availableKeys.length);
             }
             
-            i--; // Don't count this as a try
+            i--;
         }
     }
 

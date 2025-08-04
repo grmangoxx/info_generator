@@ -12,10 +12,9 @@ const server = http.createServer(async (req, res) => {
     
     if (path === '/' && req.method === 'GET') {
         try {
-            // Get country from query parameter, default to US if not provided
             const country = (query.country || 'US').toUpperCase();
             
-            // Validate country is either US, GB, CA, or AU
+
             const validCountries = ['US', 'GB', 'CA', 'AU'];
             if (!validCountries.includes(country)) {
                 res.writeHead(400, { 'Content-Type': 'application/json' });
